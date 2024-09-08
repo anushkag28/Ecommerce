@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shopping Page</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 0;
+      }
+
+      .logout-btn {
+  position: fixed; /* Stick the button to the viewport */
+  top: 20px; /* Adjust the distance from the top */
+  right: 20px; /* Adjust the distance from the right */
+  background-color: #ff6347; /* Logout button color */
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 14px;
+  text-align: center;
+  text-decoration: none; /* Remove underline from the link */
+  transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+  background-color: #d9534f; /* Hover effect */
+}
+
+      
+
+      .container {
+        width: 90%;
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      h2 {
+        text-align: center;
+        font-size: 32px;
+        margin-bottom: 30px;
+      }
+      .search-filter {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+
+      .search-filter input,
+      .search-filter select {
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+
+      .product-grid {
+        display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  align-items: start;
+      }
+
+      .product {
+        background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.3s ease-in-out;
+  height: 100%; /* Make sure the product card takes full height */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Ensure content is spaced properly */
+      }
+
+      .product:hover {
+        transform: translateY(-5px);
+      }
+
+      .product img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 10px;
+      }
+
+      .product h3 {
+        margin: 10px 0;
+        font-size: 22px;
+      }
+
+      .product p {
+        color: #28a745;
+        font-size: 18px;
+        margin-bottom: 15px;
+      }
+
+      .product button {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+      }
+
+      .product button:hover {
+        background-color: #0056b3;
+      }
+
+      .cart {
+        margin-top: 40px;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .cart h3 {
+        margin-bottom: 20px;
+        font-size: 24px;
+      }
+
+      .cart-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 18px;
+      }
+
+      #cart-total {
+        text-align: right;
+        font-size: 20px;
+        margin-top: 20px;
+      }
+
+      .checkout-btn {
+        padding: 12px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        font-size: 18px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+      }
+
+      .checkout-btn:hover {
+        background-color: #218838;
+      }
+    </style>
+  </head>
+  <body>
+   
+      <div class="container">
+        <!-- Logout Button -->
+        <a
+          data-th-href="@{'/do-logout'}"
+          type="button"
+          class="logout-btn"
+        >
+          Logout
+        </a>
+      <h2>Shopping Website</h2>
+
+     
+      <!-- Search and Filter Section -->
+      <div class="search-filter">
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Search products by name"
+          onkeyup="filterProducts()"
+        />
+        <select id="price-filter" onchange="filterProducts()">
+          <option value="all">All Prices</option>
+          <option value="20">Up to $20</option>
+          <option value="30">Up to $30</option>
+          <option value="40">Up to $40</option>
+        </select>
+      </div>
+
+      <!-- Product Grid -->
+      <div class="product-grid" id="products"></div>
+
+      <!-- Cart Section -->
+      <div class="cart">
+        <h3>Your Cart</h3>
+        <div id="cart-items"></div>
+        <p id="cart-total">Total: $0.00</p>
+        <button class="checkout-btn" onclick="checkout()">Checkout</button>
+      </div>
+    </div>
+
+    <!-- JavaScript for dynamic product display and cart functionality -->
+    <script>
+      // Example Products
+      const products = [
+        {
+          id: 1,
+          name: "Phone",
+          price: 20,
+          image: "/images/mobile.jpg?text=Product+1",
+        },
+        {
+          id: 2,
+          name: "Laptop",
+          price: 30,
+          image: "/images/laptop.jpg?text=Product+2",
+        },
+        {
+          id: 3,
+          name: "Tab",
+          price: 40,
+          image: "/images/tab.jpg?text=Product+3",
+        },
+        {
+          id: 4,
+          name: "Buds",
+          price: 10,
+          image: "/images/buds.jpg?text=Product+3",
+        },
+        {
+          id: 5,
+          name: "Watch",
+          price: 15,
+          image: "/images/watch.jpg?text=Product+3",
+        },
+        {
+          id: 6,
+          name: "TV",
+          price: 34,
+          image: "/images/TV.jpg?text=Product+3",
+        },
+        {
+          id: 7,
+          name: "Speaker",
+          price: 13,
+          image: "/images/speaker.jpg?text=Product+3",
+        },
+        {
+          id: 8,
+          name: "Printer",
+          price: 2.8,
+          image: "/images/printer.jpg?text=Product+3",
+        },
+        {
+          id: 9,
+          name: "Fridge",
+          price: 33,
+          image: "/images/fridge.jpg?text=Product+3",
+        },
+      ];
+
+      const cart = [];
+
+      // Render Products
+      function displayProducts(filteredProducts = products) {
+        const productGrid = document.getElementById("products");
+        productGrid.innerHTML = ""; // Clear existing content
+        filteredProducts.forEach((product) => {
+          const productHTML = `
+                        <div class="product">
+                            <img src="${product.image}" alt="${product.name}">
+                            <h3>${product.name}</h3>
+                            <p>$${product.price}</p>
+                            <button onclick="addToCart(${product.id})">Add to Cart</button>
+                        </div>
+                    `;
+          productGrid.innerHTML += productHTML;
+        });
+      }
+
+
+      // Add to Cart
+      function addToCart(productId) {
+        const product = products.find((p) => p.id === productId);
+        cart.push(product);
+        updateCart();
+      }
+
+      // Update Cart
+      function updateCart() {
+        const cartItems = document.getElementById("cart-items");
+        cartItems.innerHTML = "";
+        let total = 0;
+        cart.forEach((item) => {
+          total += item.price;
+          const cartItemHTML = `
+                        <div class="cart-item">
+                            <span>${item.name}</span>
+                            <span>$${item.price}</span>
+                        </div>
+                    `;
+          cartItems.innerHTML += cartItemHTML;
+        });
+        document.getElementById("cart-total").innerText = `Total: $${total.toFixed(2)}`;
+      }
+
+      // Checkout
+      function checkout() {
+        if (cart.length > 0) {
+          alert("Thank you for your purchase!");
+          cart.length = 0; // Clear cart
+          updateCart(); // Update cart display
+        } else {
+          alert("Your cart is empty!");
+        }
+      }
+  // Filter Products based on search input and price filter
+  function filterProducts() {
+        const searchInput = document.getElementById("search-input").value.toLowerCase();
+        const priceFilter = document.getElementById("price-filter").value;
+
+        let filteredProducts = products.filter((product) => {
+          const matchesSearch = product.name.toLowerCase().includes(searchInput);
+          const matchesPrice =
+            priceFilter === "all" || product.price <= parseInt(priceFilter);
+          return matchesSearch && matchesPrice;
+        });
+
+        displayProducts(filteredProducts);
+      }
+      // Initialize Page
+      displayProducts();
+    </script>
+  </body>
+</html>
